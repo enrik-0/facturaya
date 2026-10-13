@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FacturaYa · Facturas para autónomos en España, gratis y en 1 minuto</title>
+<meta name="description" content="Crea facturas válidas para autónomos en España con IVA e IRPF calculados, numeración automática y PDF. Sin registro, sin instalar nada.">
+<style>
+:root{--c:#0b6e4f;--bg:#f6f8f7;--b:#d7dedb}
+*{box-sizing:border-box}body{margin:0;font:15px/1.5 system-ui,sans-serif;background:var(--bg);color:#16211c}
+header{background:var(--c);color:#fff;padding:14px 20px;display:flex;justify-content:space-between;align-items:center}
+header b{font-size:20px}header a{color:#fff;background:#00000033;padding:6px 12px;border-radius:6px;text-decoration:none}
+main{max-width:980px;margin:20px auto;padding:0 16px;display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:800px){main{grid-template-columns:1fr}}
+section{background:#fff;border:1px solid var(--b);border-radius:10px;padding:16px}
+h2{margin:0 0 10px;font-size:16px}
+label{display:block;font-size:12px;color:#53635b;margin-top:8px}
+input,select,textarea{width:100%;padding:7px 8px;border:1px solid var(--b);border-radius:6px;font:inherit}
+.row{display:flex;gap:8px}.row>*{flex:1}
+.line{display:grid;grid-template-columns:3fr 1fr 1fr auto;gap:6px;margin-top:6px}
+button{background:var(--c);color:#fff;border:0;border-radius:6px;padding:8px 12px;font:inherit;cursor:pointer}
+button.g{background:#e8eeeb;color:#16211c}
+#inv table{width:100%;border-collapse:collapse;margin-top:12px}
+#inv th,#inv td{text-align:left;padding:5px;border-bottom:1px solid var(--b)}
+#inv td.n,#inv th.n{text-align:right}
+.tot{margin-left:auto;width:260px;margin-top:10px}.tot div{display:flex;justify-content:space-between}
+.tot .big{font-weight:700;font-size:18px;border-top:2px solid #16211c;margin-top:4px;padding-top:4px}
+.pro{grid-column:1/-1;text-align:center}
+.pro ul{display:inline-block;text-align:left}
+footer{text-align:center;color:#53635b;font-size:12px;margin:20px}
+@media print{header,#form,.pro,footer{display:none}main{display:block;margin:0}section{border:0}}
+</style>
+</head>
+<body>
+<header><b>FacturaYa</b><a href="#pro">Pro · 4,99 €/mes</a></header>
+<main>
+<section id="form">
+<h2>Datos de la factura</h2>
+<div class="row"><div><label>Nº factura</label><input id="num"></div><div><label>Fecha</label><input id="fecha" type="date"></div></div>
+<label>Tu nombre / razón social</label><input id="emNom">
+<div class="row"><div><label>Tu NIF</label><input id="emNif"></div><div><label>IBAN (opcional)</label><input id="iban"></div></div>
+<label>Tu dirección</label><input id="emDir">
+<label>Cliente</label><input id="clNom">
+<div class="row"><div><label>NIF cliente</label><input id="clNif"></div><div><label>Dirección cliente</label><input id="clDir"></div></div>
+<div class="row">
+<div><label>IVA</label><select id="iva"><option value="21">21 %</option><option value="10">10 %</option><option value="4">4 %</option><option value="0">Exento (0 %)</option></select></div>
+<div><label>Retención IRPF</label><select id="irpf"><option value="0">0 % (cliente particular)</option><option value="15">15 % (profesional)</option><option value="7">7 % (nuevo autónomo, 3 años)</option></select></div>
+</div>
+<label>Conceptos (descripción · cantidad · precio sin IVA)</label>
+<div id="lines"></div>
+<div class="row" style="margin-top:10px"><button class="g" id="add">+ Añadir línea</button><button id="print">Descargar PDF / Imprimir</button></div>
+<label>Notas</label><textarea id="notas" rows="2"></textarea>
+</section>
+<section id="inv">
+<h2 id="vTitle">Factura</h2>
+<div id="vHead"></div>
+<table><thead><tr><th>Concepto</th><th class="n">Cant.</th><th class="n">Precio</th><th class="n">Importe</th></tr></thead><tbody id="vRows"></tbody></table>
+<div class="tot" id="vTot"></div>
+<p id="vNotes"></p>
+</section>
+<section class="pro" id="pro">
+<h2>FacturaYa Pro — 4,99 €/mes</h2>
+<ul><li>Clientes y facturas guardados en la nube</li><li>Facturas recurrentes y recordatorios de cobro</li><li>Resumen trimestral para modelos 303 y 130</li><li>Preparado para VeriFactu</li></ul>
+<p><a href="#" id="proLink"><button>Quiero acceso anticipado</button></a></p>
+</section>
+</main>
+<footer>Tus datos se guardan solo en tu navegador. Esta herramienta no sustituye asesoramiento fiscal.</footer>
+<script>
+const $=id=>document.getElementById(id),KEY='facturaya.v1';
+const F=['num','fecha','emNom','emNif','iban','emDir','clNom','clNif','clDir','iva','irpf','notas'];
+let lines=[{d:'',q:1,p:0}];
+const eur=n=>n.toLocaleString('es-ES',{style:'currency',currency:'EUR'});
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function load(){try{const s=JSON.parse(localStorage.getItem(KEY)||'{}');F.forEach(k=>{if(s[k]!=null)$(k).value=s[k]});if(s.lines)lines=s.lines}catch(e){}
+ if(!$('fecha').value)$('fecha').valueAsDate=new Date();
+ if(!$('num').value)$('num').value=new Date().getFullYear()+'-001'}
+function save(){const s={lines};F.forEach(k=>s[k]=$(k).value);localStorage.setItem(KEY,JSON.stringify(s))}
+function drawLines(){$('lines').innerHTML='';lines.forEach((l,i)=>{const r=document.createElement('div');r.className='line';
+ r.innerHTML=`<input value="${esc(l.d)}" placeholder="Descripción"><input type="number" min="0" step="any" value="${l.q}"><input type="number" min="0" step="any" value="${l.p}"><button class="g" title="Quitar">×</button>`;
+ const [d,q,p,x]=r.children;d.oninput=()=>{l.d=d.value;render()};q.oninput=()=>{l.q=+q.value||0;render()};p.oninput=()=>{l.p=+p.value||0;render()};
+ x.onclick=()=>{lines.splice(i,1);if(!lines.length)lines=[{d:'',q:1,p:0}];drawLines();render()};$('lines').appendChild(r)})}
+function render(){
+ const base=lines.reduce((a,l)=>a+l.q*l.p,0),iva=base*$('iva').value/100,ret=base*$('irpf').value/100,tot=base+iva-ret;
+ $('vTitle').textContent='Factura '+$('num').value;
+ $('vHead').innerHTML=`<p><b>${esc($('emNom').value)}</b><br>NIF ${esc($('emNif').value)}<br>${esc($('emDir').value)}</p>
+ <p><b>Cliente:</b> ${esc($('clNom').value)}<br>NIF ${esc($('clNif').value)}<br>${esc($('clDir').value)}</p><p>Fecha: ${esc($('fecha').value)}</p>`;
+ $('vRows').innerHTML=lines.map(l=>`<tr><td>${esc(l.d)}</td><td class="n">${l.q}</td><td class="n">${eur(l.p)}</td><td class="n">${eur(l.q*l.p)}</td></tr>`).join('');
+ $('vTot').innerHTML=`<div><span>Base imponible</span><span>${eur(base)}</span></div><div><span>IVA ${$('iva').value}%</span><span>${eur(iva)}</span></div>`+
+ (+$('irpf').value?`<div><span>IRPF −${$('irpf').value}%</span><span>−${eur(ret)}</span></div>`:'')+`<div class="big"><span>Total</span><span>${eur(tot)}</span></div>`;
+ const n=[];if($('iban').value)n.push('Pago por transferencia: '+esc($('iban').value));if($('notas').value)n.push(esc($('notas').value));
+ if($('iva').value==='0')n.push('Operación exenta de IVA.');
+ $('vNotes').innerHTML=n.join('<br>');save()}
+F.forEach(k=>$(k).addEventListener('input',render));
+$('add').onclick=()=>{lines.push({d:'',q:1,p:0});drawLines()};
+$('print').onclick=()=>{window.print();const m=$('num').value.match(/^(.*?)(\d+)$/);if(m){$('num').value=m[1]+String(+m[2]+1).padStart(m[2].length,'0');render()}};
+$('proLink').href='mailto:?subject=FacturaYa%20Pro%20acceso%20anticipado';
+load();drawLines();render();
+</script>
+</body>
+</html>
