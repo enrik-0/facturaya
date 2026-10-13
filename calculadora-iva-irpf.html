@@ -1,0 +1,14 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Calculadora de IVA e IRPF para facturas de autónomo | FacturaYa</title><meta name="description" content="Calcula al instante el IVA, la retención de IRPF y el total de tu factura de autónomo."><link rel="canonical" href="https://enrik-0.github.io/facturaya/calculadora-iva-irpf.html"><link rel="stylesheet" href="style.css"></head><body><div class="top"><a class="logo" href="index.html">FacturaYa</a><nav><a href="app.html">Abrir la app</a><a href="calculadora-iva-irpf.html">Calculadora</a></nav></div><div class="wrap"><div class="card"><h1>Calculadora de IVA e IRPF para facturas</h1>
+<p>Introduce la base imponible (sin IVA) y elige los porcentajes.</p>
+<div class="row"><div><label>Base imponible (€)</label><input id="b" inputmode="decimal" value="1000"></div>
+<div><label>IVA</label><select id="i"><option>21</option><option>10</option><option>4</option><option>0</option></select></div>
+<div><label>Retención IRPF</label><select id="r"><option>0</option><option selected>15</option><option>7</option></select></div></div>
+<div class="tot" id="o"></div>
+<p><a class="btn" href="app.html">Crear la factura con estos datos</a></p>
+<p class="note">Si tienes el total y quieres saber la base: base = total ÷ (1 + IVA − IRPF).</p></div></div>
+<script>
+const f=n=>n.toLocaleString('es-ES',{style:'currency',currency:'EUR'}),$=s=>document.getElementById(s);
+function c(){const b=parseFloat($('b').value.replace(',','.'))||0,i=+$('i').value,r=+$('r').value,iv=Math.round(b*i)/100,rt=Math.round(b*r)/100;
+$('o').innerHTML='<div><span>Base</span><span>'+f(b)+'</span></div><div><span>IVA '+i+'%</span><span>'+f(iv)+'</span></div><div><span>IRPF −'+r+'%</span><span>−'+f(rt)+'</span></div><div class="big"><span>Total a cobrar</span><span>'+f(b+iv-rt)+'</span></div>'}
+['b','i','r'].forEach(k=>$(k).addEventListener('input',c));c();
+</script><footer><a href="index.html">Inicio</a><a href="app.html">App</a><a href="factura-autonomo.html">Factura de autónomo</a><a href="factura-con-irpf.html">Factura con IRPF</a><a href="modelo-303-y-130.html">Modelos 303 y 130</a><a href="privacidad.html">Privacidad</a><a href="aviso-legal.html">Aviso legal</a><br>Orientativo; no sustituye asesoramiento fiscal. FacturaYa no es software certificado VeriFactu.</footer></body></html>
