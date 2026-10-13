@@ -61,7 +61,7 @@ footer{text-align:center;color:#53635b;font-size:12px;margin:20px}
 <section class="pro" id="pro">
 <h2>FacturaYa Pro — 4,99 €/mes</h2>
 <ul><li>Clientes y facturas guardados en la nube</li><li>Facturas recurrentes y recordatorios de cobro</li><li>Resumen trimestral para modelos 303 y 130</li><li>Preparado para VeriFactu</li></ul>
-<p><a href="#" id="proLink"><button>Quiero acceso anticipado</button></a></p>
+<p><b>Próximamente.</b></p>
 </section>
 </main>
 <footer>Tus datos se guardan solo en tu navegador. Esta herramienta no sustituye asesoramiento fiscal.</footer>
@@ -93,7 +93,6 @@ function render(){
 F.forEach(k=>$(k).addEventListener('input',render));
 $('add').onclick=()=>{lines.push({d:'',q:1,p:0});drawLines()};
 $('print').onclick=()=>{window.print();const m=$('num').value.match(/^(.*?)(\d+)$/);if(m){$('num').value=m[1]+String(+m[2]+1).padStart(m[2].length,'0');render()}};
-$('proLink').href='mailto:?subject=FacturaYa%20Pro%20acceso%20anticipado';
 load();drawLines();render();
 </script>
 </body>
