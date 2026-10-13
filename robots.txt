@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://enrik-0.github.io/facturaya/sitemap.xml
